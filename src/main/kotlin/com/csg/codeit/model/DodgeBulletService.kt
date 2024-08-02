@@ -109,10 +109,10 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
         }
         map[you.getY()][you.getX()] = '*'
         bullets.forEach { map[it.getY()][it.getX()] = it.direction }
-        println("current action $action")
-        map.forEach {
-            println(it.joinToString(""))
-        }
+//        println("current action $action")
+//        map.forEach {
+//            println(it.joinToString(""))
+//        }
     }
 
 
