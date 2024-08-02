@@ -12,7 +12,7 @@ import org.springframework.web.servlet.view.RedirectView
 
 @RestController
 class StudentController {
-    @GetMapping(value = ["/"], consumes = [MediaType.TEXT_PLAIN_VALUE])
+    @GetMapping(value = ["/"])
     fun home() = RedirectView("index.html")
     @PostMapping(value = ["/"], consumes = [MediaType.TEXT_PLAIN_VALUE])
     fun evaluate(@RequestBody txt: String): ResponseEntity<String> {
