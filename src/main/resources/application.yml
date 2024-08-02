@@ -1,3 +1,3 @@
 app:
-  coordinator-auth-token: ${COORDINATOR_AUTH_TOKEN}
+  coordinator-auth-token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjb2RlaXRzdWlzc2UyMDIyQGdtYWlsLmNvbSIsImV4cCI6MTczMDMwNDAwMH0.trNElwseK8QUiYli1kqqs5vJj4Kits4aCrVeIyBxPFwwLqhnegejYJhYQeCrETtrzq_JpIE1dvCMfvrRI5sHTA
   endpoint-suffix: ${ENDPOINT_SUFFIX}

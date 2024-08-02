@@ -11,6 +11,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
+import java.util.stream.Collectors
 import kotlin.math.ceil
 
 @Service
@@ -49,7 +50,7 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
     fun validate(actions: List<Char>?, level: Level): Boolean {
         if (level.impossible) {
             return actions == null
-        } else if (actions==null){
+        } else if (actions == null) {
             return false
         }
 
@@ -109,12 +110,12 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
 
 
     fun postChallenge(teamUrl: String): List<Pair<Solution, Int>> {
-        return levels.parallelStream().map { level ->
+        val result = levels.parallelStream().map { level ->
             val requestBody =
                 level.map.joinToString("\n") { it.joinToString("") }.toRequestBody("text/plain".toMediaType())
-            val fullUrl = if (teamUrl.endsWith("/")){
+            val fullUrl = if (teamUrl.endsWith("/")) {
                 teamUrl + "dodge"
-            }else{
+            } else {
                 teamUrl + "/dodge"
             }
             val request = Request.Builder().url(fullUrl).post(requestBody).build()
@@ -125,17 +126,21 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
                     throw RuntimeException("failed to parse solution")
                 }
             }
-        }.filter { it != null }.toList() as List<Pair<Solution, Int>>
+        }
+        return result.collect(Collectors.toList()).filterNotNull()
     }
 
     fun evaluateSolution(solutions: List<Pair<Solution, Int>>): ChallengeResult {
         val passed = mutableListOf<Int>()
-        solutions.forEach {solution->
-            if (validate(solution.first.instructions, levels[solution.second])){
+        solutions.forEach { solution ->
+            if (validate(solution.first.instructions, levels[solution.second])) {
                 passed.add(solution.second)
             }
         }
-        return  ChallengeResult(ceil(passed.size.toDouble() * 100 / levels.size).toInt(), "failed test [${(levels.map { it.index }-passed).joinToString(",")}]")
+        return ChallengeResult(
+            ceil(passed.size.toDouble() * 100 / levels.size).toInt(),
+            "failed test [${(levels.map { it.index } - passed).joinToString(",")}]"
+        )
     }
 
     fun getLevels() = levels

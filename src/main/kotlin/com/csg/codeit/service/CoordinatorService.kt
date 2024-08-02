@@ -44,7 +44,7 @@ class CoordinatorService(
             }?.also { logger.info("Notified coordinator with: $result") }
                 ?: logger.warn("Error notifying coordinator with: $result")
         } catch (e: Exception) {
-            logger.error("Error notifying coordinator with: $result\nException message: ${e.message}")
+            logger.error("Error notifying coordinator with: $result\nException message: ${e.message}", e)
         }
     }
 
