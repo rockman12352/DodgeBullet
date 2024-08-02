@@ -1,102 +1,62 @@
-# CodeIT Suisse Kotlin Template
+# Dodge Bullet!
 
-This project template provides some simple scaffolding for a level-based challenge.
+### Instructions
 
-All you need is to introduce implementations and configuration for:
+You are in the Wild West and bullets will coming anywhere, please provide your instructions to dodge them all.
 
-* `LevelBasedChallenge`
-* `ChallengeLevel`
-* `ChallengeRequest`
-* `ChallengeResponse`
-* `Checker`
-* `Iterable<ChallengeLevel>`
+#### Endpoint
+Expose a `POST` endpoint `/dodge` for us to call
 
-So that Spring can auto-wire them into `LevelEvaluatorService`.
+#### Input
 
-## Explainer
+You will be given the following `text` as map with every attempt:
 
-An evaluation request coming in from the coordinator is modelled as an `EvaluationRequest`.
+1. `.` means empty area
+1. `u` `d` `r` `l` represent bullets with its direction up, down, right or left
+1. `*` is where you located
 
-This `EvaluationRequest` can in turn be expressed as an implementation of `ChallengeRun`,
-which can be `invoke()` on a `ChallengeRequest` to get a nullable `ChallengeRespose?` from the endpoint under
-evaluation.
+```
+.dd
+r*.
+...
+```
 
-As such, the `ChallengeRequest` implementation should be something ready for Jackson to convert,
-bearing in mind to use `@get:JsonIgnore` on any attributes you do not want to expose.
+#### Output Expected
 
-The implementation of `LevelBasedChallenge` is responsible for creating `ChallengeRequest` for a `ChallengeLevel`. 
-Depending on where the logic for a request generation sits, this implementation can be simple, or harder.
+Expected `JSON` to be returned
 
-Implementation of `ChallengeResponse` is self-explanatory, it models what your challenge is expecting in return.
-
-Finally, the implementation of `Checker` is to score a given pair of `ChallengeRequest` and `ChallengeResponse`, 
-returning a `ChallengeResult` for it.
-
-## README.md
-
-When this project is deployed, this very file will be copied to `BOOT-INF/classes/static` so
-that [zero-md](https://zerodevx.github.io/zero-md/installation/) can render it in `index.html`.
-
-So, remember to update this README.md and the title in `index.html` (search for `<!-- RENAME BELOW -->`).
-
-## Local testing
-
-For testing, write your own solver controller
-(remember to run `App` with the environment variable `ENDPOINT_SUFFIX` defined).
-
-Make sure your solver controller handles `POST` requests at the same path as `ENDPOINT_SUFFIX`.
-
-Then, in your browser, go to `http://localhost:8080` (default port), open the console and run the following `fetch`
-command:
-
-````javascript
-fetch('http://localhost:8080/evaluate', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ "runId": "test", "teamUrl": "http://localhost:8080/", "callbackUrl": "http://localhost:8080/coordinator" }),
-})
-.then(response => response.text())
-.then(data => { console.log('Success!', data); })
-.catch((error) => { console.error('Error:', error); });
-````
-
-## Example controller
-
-It is strongly recommended to have a controller that serves an example of the challenge request/response.
-
-By default, the endpoint `/example` is exempted from authentication requirements in production, so feel free to use
-that.
-
-The `GET` response for this can be something like:
-
-````json
+```json5
 {
-  "request": {
-    "challenge": "request"
-  },
-  "response": {
-    "challenge": [
-      "response",
-      "as",
-      "desired"
-    ]
-  }
+  "instructions": ["d", "l"]
 }
-````
+```
 
-## Gitlab CI/Heroku
+### Rules
 
-This template has Gitlab CI set up for easy deployments to Heroku via [`dpl`](https://github.com/travis-ci/dpl). By
-default, only `master` branch will be deployed.
+1. Bullets will move to next cell each time as you moved
 
-You will need to add the following CI/CD variables under Settings:
+    ```
+    ...
+    .dd
+    .*.
+    ```
+    This is the output when you move down with sample Input
+1. Bullets can overlap with each other
+1. You can't dodge towards bullet
 
-- `HEROKU_APP_NAME`
-- `HEROKU_API_KEY` (Remember to set this variable as masked so that it will not be printed in build logs)
+    given input:
+    ```
+    .d
+    .*
+    ```
 
-To perform deployments for branches, do not set the variables as protected so that the pipeline is able to access the
-variables.
+   you can move `left` to dodge the bullet
 
-If you wish to have multiple environments, you can add in CI/CD variables with environment scope, and add a new job
-in `.gitlab-ci.yml` extending `.deploy_template` for the new environment(s). A sample set-up can be found in
-branch `gitlab-ci-demo`.
+   you **can't** move `up` to dodge the bullet
+1. If no way to dodge all bullets, please provide null as instructions
+    ```json5
+    {
+      "instructions": null
+    }
+    ```
+1. You can't move out of the map
