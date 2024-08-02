@@ -13,8 +13,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.File
 import java.lang.RuntimeException
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.LinkedList
 import java.util.Scanner
+import kotlin.io.path.Path
+import kotlin.io.path.listDirectoryEntries
 import kotlin.streams.toList
 
 @Service
@@ -25,11 +29,14 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
         val levels = mutableListOf<Level>()
         var index = 0
         while (true) {
-            val levelFile = this::class.java.classLoader.getResource("$index.level")
-            if (levelFile == null) {
+//            val uri =  this.javaClass.getResource("/").toURI()
+//
+//            println( "what ${Paths.get(uri).listDirectoryEntries()}")
+            val fis = this.javaClass.getResourceAsStream("/$index.level")
+            if (fis == null) {
                 break
             } else {
-                val scanner = Scanner(File(levelFile.file))
+                val scanner = Scanner(fis)
                 val map = mutableListOf<List<Char>>()
                 var impossible = false
                 while (scanner.hasNext()) {
