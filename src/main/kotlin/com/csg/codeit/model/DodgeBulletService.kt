@@ -1,7 +1,6 @@
 package com.csg.codeit.model
 
 import com.csg.codeit.config.objectMapper
-import com.csg.codeit.service.CoordinatorService
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.kotlin.readValue
 import okhttp3.MediaType.Companion.toMediaType
@@ -11,15 +10,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.io.File
-import java.lang.RuntimeException
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.LinkedList
-import java.util.Scanner
-import kotlin.io.path.Path
-import kotlin.io.path.listDirectoryEntries
-import kotlin.streams.toList
+import java.util.*
+import kotlin.math.ceil
 
 @Service
 class DodgeBulletService(val httpClient: OkHttpClient) {
@@ -120,13 +112,17 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
         return levels.parallelStream().map { level ->
             val requestBody =
                 level.map.joinToString("\n") { it.joinToString("") }.toRequestBody("text/plain".toMediaType())
-            val request = Request.Builder().url(teamUrl).post(requestBody).build()
+            val fullUrl = if (teamUrl.endsWith("/")){
+                teamUrl + "dodge"
+            }else{
+                teamUrl + "/dodge"
+            }
+            val request = Request.Builder().url(fullUrl).post(requestBody).build()
             httpClient.newCall(request).execute().use { resp ->
                 try {
                     objectMapper.readValue<Solution>(resp.body!!.string()) to level.index
                 } catch (exp: Exception) {
-                    logger.error("failed to parse solution")
-                    null
+                    throw RuntimeException("failed to parse solution")
                 }
             }
         }.filter { it != null }.toList() as List<Pair<Solution, Int>>
@@ -139,8 +135,10 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
                 passed.add(solution.second)
             }
         }
-        return  ChallengeResult(passed.size, "failed test ${(levels.map { it.index }-passed).joinToString(",")}")
+        return  ChallengeResult(ceil(passed.size.toDouble() * 100 / levels.size).toInt(), "failed test [${(levels.map { it.index }-passed).joinToString(",")}]")
     }
+
+    fun getLevels() = levels
 }
 
 class Level(val index: Int, val map: List<List<Char>>, val impossible: Boolean)

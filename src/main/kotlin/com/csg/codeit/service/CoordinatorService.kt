@@ -2,7 +2,10 @@ package com.csg.codeit.service
 
 import com.csg.codeit.config.AppConfig
 import com.csg.codeit.config.objectMapper
-import com.csg.codeit.model.*
+import com.csg.codeit.model.DodgeBulletService
+import com.csg.codeit.model.EvaluationRequest
+import com.csg.codeit.model.EvaluationResultRequest
+import com.csg.codeit.model.RequestPayload
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
@@ -23,11 +26,20 @@ class CoordinatorService(
     private val logger: Logger = LoggerFactory.getLogger(CoordinatorService::class.java)
 
     fun acceptRequest(evaluationRequest: EvaluationRequest) {
-        val challengeResponse = dodgeBulletService.postChallenge(evaluationRequest.teamUrl)
-        val evaluateResult = dodgeBulletService.evaluateSolution(challengeResponse)
-        val result = EvaluationResultRequest(evaluationRequest.runId, evaluateResult.score, evaluateResult.message)
+        val url = evaluationRequest.callbackUrl.toHttpUrl()
         try {
-            result.post(evaluationRequest.callbackUrl.toHttpUrl()) {
+            val challengeResponse = dodgeBulletService.postChallenge(evaluationRequest.teamUrl)
+            val evaluateResult = dodgeBulletService.evaluateSolution(challengeResponse)
+            val result = EvaluationResultRequest(evaluationRequest.runId, evaluateResult.score, evaluateResult.message)
+           postResult(url, result)
+        } catch (exp : Exception){
+            postResult(url, EvaluationResultRequest(evaluationRequest.runId, 0, exp.message ?: "error"))
+        }
+    }
+
+    private fun postResult(url: HttpUrl, result: EvaluationResultRequest) {
+        try {
+            result.post(url) {
                 it.addHeader("Authorization", appConfig.bearerToken)
             }?.also { logger.info("Notified coordinator with: $result") }
                 ?: logger.warn("Error notifying coordinator with: $result")

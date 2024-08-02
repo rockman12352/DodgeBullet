@@ -17,6 +17,6 @@ class Logger : Filter {
         request as HttpServletRequest
         response as HttpServletResponse
         chain.doFilter(request, response)
-        println("request on: ${request.requestURI}, params: ${jsonMapper().writeValueAsString(request.parameterMap)}")
+        println("request on: ${request.requestURI}, body: ${String(request.inputStream.readAllBytes())}")
     }
 }
