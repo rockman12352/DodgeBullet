@@ -47,7 +47,7 @@ Expected `JSON` to be returned
     given input:
     ```
     .d
-    .*
+    d*
     ```
 
    you can move `left` to dodge the bullet
