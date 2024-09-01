@@ -109,8 +109,15 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
     }
 
 
-    fun postChallenge(teamUrl: String): List<Pair<Solution, Int>> {
-        val result = levels.parallelStream().map { level ->
+    fun postChallenge(teamUrl: String, runId:String){
+        val randomLevels = mutableListOf<Level>()
+        val allLevels = levels.toMutableList()
+        randomLevels.add(allLevels.removeFirst())
+        while (allLevels.isNotEmpty()){
+            val seed = Random().nextInt(100)
+            randomLevels.add(allLevels.removeAt(seed % allLevels.size))
+        }
+        randomLevels.map { level ->
             val requestBody =
                 level.map.joinToString("\n") { it.joinToString("") }.toRequestBody("text/plain".toMediaType())
             val fullUrl = if (teamUrl.endsWith("/")) {
@@ -118,29 +125,19 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
             } else {
                 teamUrl + "/dodge"
             }
-            val request = Request.Builder().url(fullUrl).post(requestBody).build()
+            val request = Request.Builder().url(fullUrl).header("runId", runId).post(requestBody).build()
             httpClient.newCall(request).execute().use { resp ->
-                try {
-                    objectMapper.readValue<Solution>(resp.body!!.string()) to level.index
+                val solution = try {
+                    objectMapper.readValue<Solution>(resp.body!!.string())
                 } catch (exp: Exception) {
                     throw RuntimeException("failed to parse solution")
                 }
+                val result = validate(solution.instructions, levels[level.index])
+                if (!result){
+                    throw RuntimeException("failed to dodge the bullet")
+                }
             }
         }
-        return result.collect(Collectors.toList()).filterNotNull()
-    }
-
-    fun evaluateSolution(solutions: List<Pair<Solution, Int>>): ChallengeResult {
-        val passed = mutableListOf<Int>()
-        solutions.forEach { solution ->
-            if (validate(solution.first.instructions, levels[solution.second])) {
-                passed.add(solution.second)
-            }
-        }
-        return ChallengeResult(
-            ceil(passed.size.toDouble() * 100 / levels.size).toInt(),
-            "failed test [${(levels.map { it.index } - passed).joinToString(",")}]"
-        )
     }
 
     fun getLevels() = levels

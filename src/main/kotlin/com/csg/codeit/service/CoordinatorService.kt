@@ -2,10 +2,7 @@ package com.csg.codeit.service
 
 import com.csg.codeit.config.AppConfig
 import com.csg.codeit.config.objectMapper
-import com.csg.codeit.model.DodgeBulletService
-import com.csg.codeit.model.EvaluationRequest
-import com.csg.codeit.model.EvaluationResultRequest
-import com.csg.codeit.model.RequestPayload
+import com.csg.codeit.model.*
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
@@ -16,6 +13,7 @@ import okhttp3.Response
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import kotlin.math.ceil
 
 @Service
 class CoordinatorService(
@@ -28,9 +26,8 @@ class CoordinatorService(
     fun acceptRequest(evaluationRequest: EvaluationRequest) {
         val url = evaluationRequest.callbackUrl.toHttpUrl()
         try {
-            val challengeResponse = dodgeBulletService.postChallenge(evaluationRequest.teamUrl)
-            val evaluateResult = dodgeBulletService.evaluateSolution(challengeResponse)
-            val result = EvaluationResultRequest(evaluationRequest.runId, evaluateResult.score, evaluateResult.message)
+            dodgeBulletService.postChallenge(evaluationRequest.teamUrl, evaluationRequest.runId)
+            val result = EvaluationResultRequest(evaluationRequest.runId, 100, "you pass!")
            postResult(url, result)
         } catch (exp : Exception){
             postResult(url, EvaluationResultRequest(evaluationRequest.runId, 0, exp.message ?: "error"))
