@@ -60,3 +60,4 @@ Expected `JSON` to be returned
     }
     ```
 1. You can't move out of the map
+1. Challenge will be sending one by one, you need to pass them all
