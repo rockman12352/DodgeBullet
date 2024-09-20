@@ -2,7 +2,7 @@
 
 ### Instructions
 
-You are in the Wild West and bullets will coming anywhere, please provide your instructions to dodge them all.
+You are in the Wild West and bullets will come anywhere, please provide your instructions to dodge them all.
 
 #### Endpoint
 Expose a `POST` endpoint `/dodge` for us to call
