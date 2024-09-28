@@ -127,10 +127,15 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
             }
             val request = Request.Builder().url(fullUrl).header("runId", runId).post(requestBody).build()
             httpClient.newCall(request).execute().use { resp ->
-                val solution = try {
-                    objectMapper.readValue<Solution>(resp.body!!.string())
-                } catch (exp: Exception) {
+                val str = try {
+                    resp.body!!.string()
+                }catch (exp: Exception) {
                     throw RuntimeException("failed to parse solution")
+                }
+                val solution = try {
+                    objectMapper.readValue<Solution>(str)
+                } catch (exp: Exception) {
+                    throw RuntimeException("failed to parse solution $str")
                 }
                 val result = validate(solution.instructions, levels[level.index])
                 if (!result){
