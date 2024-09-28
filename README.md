@@ -61,3 +61,5 @@ Expected `JSON` to be returned
     ```
 1. You can't move out of the map
 1. Challenge will be sending one by one, you need to pass them all
+1. You just need to give sufficient instructions, when all instructions run out, you will stop there till the end
+1. Accepted instructions are `l`, `r`, `u`, `d`
