@@ -40,7 +40,7 @@ Expected `JSON` to be returned
     .dd
     .*.
     ```
-    This is the output when you move down with sample Input
+    This is the output when you move down with sample Input, be aware `r` and `d` is overlapped, `r` is still there.
 1. Bullets can overlap with each other
 1. You can't dodge towards bullet
 
