@@ -18,5 +18,8 @@ class EvaluationController(private val coordinatorService: CoordinatorService) {
 
     @PostMapping(value = ["/evaluate"], consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun evaluate(@RequestBody evaluationRequest: EvaluationRequest): ResponseEntity<Void> =
-        ResponseEntity<Void>(HttpStatus.ACCEPTED).also { coroutineScope.launch { coordinatorService.acceptRequest(evaluationRequest) } }
+        ResponseEntity<Void>(HttpStatus.ACCEPTED).also {
+            println("evaluating $evaluationRequest")
+            coroutineScope.launch { coordinatorService.acceptRequest(evaluationRequest) }
+        }
 }
