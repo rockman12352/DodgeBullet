@@ -134,7 +134,7 @@ class DodgeBulletService(val httpClient: OkHttpClient) {
                 }
                 val result = validate(solution.instructions, levels[level.index])
                 if (!result){
-                    println("fail evaluation:$teamUrl  $solution")
+                    println("fail evaluation:$teamUrl ${level.index} $solution")
                     throw RuntimeException("failed to dodge the bullet")
                 }
             }
